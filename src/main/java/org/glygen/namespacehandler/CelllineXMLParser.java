@@ -2,33 +2,86 @@ package org.glygen.namespacehandler;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+import java.util.Scanner;
 
 public class CelllineXMLParser {
 	
-	public static void main(String[] args) {
-		String filename = "original/cellosaurus.xml";
+	public static void main(String[] args) throws IOException {
+		String filename = "original/cellosaurus.txt";
 		if (args.length > 0) {
 			filename = args[0];
 		}
- 		File file = new File(filename);
-	    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+ 		
+ 		FileInputStream inputStream = null;
+		Scanner sc = null;
+		try {
+		    inputStream = new FileInputStream(filename);
+		    sc = new Scanner(inputStream, "UTF-8");
+		    FileOutputStream fos = new FileOutputStream("namespaces" + File.separator + "cellline.txt");
+		    OutputStreamWriter w = new OutputStreamWriter(fos);
+		    BufferedWriter bw = new BufferedWriter(w);
+		    String accession = null;
+		    String identifier = null;
+		    boolean start = false;
+		    int i=0;
+		    while (sc.hasNextLine()) {
+		        String line = sc.nextLine();
+		        if (line.contains("________")) {
+		        	start = true;
+		        	continue;
+		        }
+		        if (!start) {
+		        	continue;
+		        }
+		        String[] content = line.split("   ");
+		        if (content.length > 1) {
+		        	String code = content[0];
+		        	String value = content[1];
+		        	if (code.trim().equalsIgnoreCase("ID")) {
+		        		identifier = value.trim();
+		        	} else if (code.trim().equalsIgnoreCase("SY")) {
+		        		if (identifier != null && accession != null) {  // they should be initialized by previous rows
+			        		// split by ;
+			        		String[] synonyms = value.trim().split(";");
+			        		for (String syn: synonyms) {
+			        			bw.append(syn.trim() + "\t" + identifier + "\t" + 
+			        					"https://www.cellosaurus.org/"+ accession + "\n");
+			        		}
+		        		} else {
+		        			System.err.println ("identifier and accession are null for line " + line);
+		        		}
+		        	} else if (code.trim().equalsIgnoreCase("AC")) {
+		        		accession = value.trim();
+		        		if (identifier != null) {
+		        			bw.append(identifier + "\t" + identifier + "\t" + 
+		        					"https://www.cellosaurus.org/"+ accession + "\n");
+		        		}
+		        	}
+		        }
+		        i++;
+		        if (i % 500 == 0) bw.flush();
+		    }
+		    bw.close();
+		    if (sc.ioException() != null) {
+		        sc.ioException().printStackTrace();
+		    }
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+		    if (inputStream != null) {
+		        inputStream.close();
+		    }
+		    if (sc != null) {
+		        sc.close();
+		    }
+		}
+		
+	   /* DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 	    DocumentBuilder documentBuilder = null;
 	    
 	    try {
@@ -74,11 +127,11 @@ public class CelllineXMLParser {
 	            }
 	            if (i % 100 == 0) bw.flush();
 	        }
-	        
-	        bw.close();
+		    
+		    bw.close();
 	    } catch (XPathExpressionException | IOException e) {
 	        e.printStackTrace();
-	    }
+	    }*/
 	}
 
 }
