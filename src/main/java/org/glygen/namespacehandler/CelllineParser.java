@@ -9,18 +9,18 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Scanner;
 
-public class CelllineXMLParser {
+public class CelllineParser {
 	
 	public static void main(String[] args) throws IOException {
-		String filename = "original/cellosaurus.txt";
+		String folder = "original";
 		if (args.length > 0) {
-			filename = args[0];
+			folder = args[0];
 		}
  		
  		FileInputStream inputStream = null;
 		Scanner sc = null;
 		try {
-		    inputStream = new FileInputStream(filename);
+		    inputStream = new FileInputStream(folder + File.separator + "cellosaurus.txt");
 		    sc = new Scanner(inputStream, "UTF-8");
 		    FileOutputStream fos = new FileOutputStream("namespaces" + File.separator + "cellline.txt");
 		    OutputStreamWriter w = new OutputStreamWriter(fos);
