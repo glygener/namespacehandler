@@ -12,7 +12,7 @@ After downloading the files, place them in a folder and use the folder name as t
 
 There are 3 Java applications to execute. 
 * [NCBITaxonomyParser.java](https://github.com/glygener/namespacehandler/blob/main/src/main/java/org/glygen/namespacehandler/NcbiTaxonomyParser.java) - parses the "names.dmp" file from the folder (command line argument) and generates species.txt file in [namespaces](https://github.com/glygener/namespacehandler/tree/main/namespaces) folder of the repository.
-* [CellineParser.java](https://github.com/glygener/namespacehandler/blob/main/src/main/java/org/glygen/namespacehandler/CellineParser.java) - parses the "cellosaurus.txt" from the given folder and generates cellline.txt file in [namespaces](https://github.com/glygener/namespacehandler/tree/main/namespaces) folder of the repository.
+* [CelllineParser.java](https://github.com/glygener/namespacehandler/blob/main/src/main/java/org/glygen/namespacehandler/CelllineParser.java) - parses the "cellosaurus.txt" from the given folder and generates cellline.txt file in [namespaces](https://github.com/glygener/namespacehandler/tree/main/namespaces) folder of the repository.
 * [OBOParser.java](https://github.com/glygener/namespacehandler/blob/main/src/main/java/org/glygen/namespacehandler/OBOParser.java) - parses the files with .json extension in the given folder and generates the corresponding .txt versions in [namespaces](https://github.com/glygener/namespacehandler/tree/main/namespaces) folder of the repository.
 
 The generated files are tab separated text files in the following format
