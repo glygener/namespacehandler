@@ -21,9 +21,15 @@ public class OBOParser {
 		String folder = args.length > 0 ? "args[0]" : "original";
 		File namespaceFolder = new File (folder);
         String[] namespaceFiles = namespaceFolder.list();
+        boolean namespaceMatch = false;
         if (namespaceFiles != null) {
 	        for (String filename: namespaceFiles) {
 	        	if (filename.endsWith("json")) {
+	        		if (filename.startsWith("go-")) {
+	        			namespaceMatch = true;
+	        		} else {
+	        			namespaceMatch = false;
+	        		}
 	        		StringBuffer namespaceOut = new StringBuffer();
 	        		String jsonString;
 					try {
@@ -39,6 +45,7 @@ public class OBOParser {
 		        		    JSONArray nodes = graph.getJSONArray("nodes"); 
 		        		    totalCount = nodes.length();
 		        		    for (int j=0; j < nodes.length(); j++) {
+		        		    	boolean skip = false;
 		        		    	JSONObject node = nodes.getJSONObject(j);
 		        		    	String id = node.getString("id");   //URI
 		        		    	if (node.has("lbl")) {
@@ -49,6 +56,27 @@ public class OBOParser {
 			        		    			if (node.has("meta") && node.getJSONObject("meta").has("deprecated")) {
 				        		    			deprecated++;
 				        		    		}
+			        		    			if (namespaceMatch) {
+					        		    		if (node.has("meta") && node.getJSONObject("meta").has("basicPropertyValues")) {
+					        		    			JSONArray basicPropertyValues = node.getJSONObject("meta").getJSONArray("basicPropertyValues");
+					        		    			if (basicPropertyValues != null) {
+							        		    		for (int k=0; k < basicPropertyValues.length(); k++) {
+							        		    			JSONObject prop = basicPropertyValues.getJSONObject(k);
+							        		    			String pred = prop.getString("pred");
+							        		    			if (pred.contains("hasOBONamespace")) {
+							        		    				String val = prop.getString("val");
+						        		    					if (!val.equalsIgnoreCase("cellular_component")) {
+						        		    						// skip this one
+						        		    						skip = true;
+						        		    						break;
+						        		    					} 
+							        		    			}
+							        		    		}
+					        		    			}
+					        		    		}
+					        		    		if (skip) continue;
+					        		    	}
+			        		    			
 					        		    	namespaceOut.append(label + "\t" + label + "\t" + id + "\n");
 					        		    	if (node.has("meta") && node.getJSONObject("meta").has("synonyms")) {
 						        		    	JSONArray synonyms = node.getJSONObject("meta").getJSONArray("synonyms");
@@ -56,13 +84,15 @@ public class OBOParser {
 						        		    		for (int k=0; k < synonyms.length(); k++) {
 						        		    			JSONObject synonym = synonyms.getJSONObject(k);
 						        		    			String pred = synonym.getString("pred");
-						        		    			if (pred.equalsIgnoreCase("hasExactSynonym")) {
+						        		    			//if (pred.equalsIgnoreCase("hasExactSynonym")) {
+						        		    			if (pred.contains("Synonym")) {
 						        		    				String syn = synonym.getString("val");
 						        		    				namespaceOut.append(syn + "\t" + label + "\t" + id + "\n");
 						        		    			}
 						        		    		}
 						        		    	}
 					        		    	}
+			        		    			
 			        		    		} else {
 			        		    			count++;
 			        		    			System.out.println ("found non-class node " + type);
